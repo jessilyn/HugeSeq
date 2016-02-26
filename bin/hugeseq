@@ -259,7 +259,7 @@ def __callvars(jobs, idprefix, output, inputs, pjobs, variants):
 
 	if (variants is None or "gatk" in variants):		
                 job0=Job('gatk_vc-%s'%idprefix)
-                job0.memory = "16G"
+                job0.memory = "25G"
                 job0.sge_options="-l h_rt=120:00:00 -A %s"%args.account
                 job0.output=File(output+".gatk.vcf")
                 job0.append('gatk_vc.sh %s %s %s %s %s %s'%(job0.output, capture, args.reference_calls, args.snp_hapcaller, args.indel_hapcaller, input))
