@@ -67,7 +67,8 @@ OUTPUT_MODE_HC=""
 if [[ "$reference_calls" == "True" ]]
 then
 	OUTPUT_MODE_UG="--output_mode emit_all_sites"
-	OUTPUT_MODE_HC="-ERC BP_RESOLUTION"
+        # default bands are 5,20,60, we save some space by going 20,60
+        OUTPUT_MODE_HC="-ERC GVCF -variant_index_type LINEAR -variant_index_parameter 128000 -GQB 20 -GQB 60"
 	NO_VARIATION="-selecttype no_variation"
 fi
 
