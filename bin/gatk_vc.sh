@@ -95,13 +95,14 @@ fi
 
 MULTITHREAD="-nct 4"
 
+# For DNA, the broad recommends 30 / 10 confidence cutoffs
 gc_command="java -Xmx8g -Xms8g -Djava.io.tmpdir=$TMP -jar $GATK/GenomeAnalysisTK.jar \
    -T UnifiedGenotyper \
    -R $REF \
    $f \
    --dbsnp $DBSNP \
    -o $output_gc $optL $CAPTURE \
-   -stand_call_conf 20.0 \
+   -stand_call_conf 30.0 \
    -stand_emit_conf 10.0 \
    -gt_mode DISCOVERY $OUTPUT_MODE_UG \
    --genotype_likelihoods_model BOTH \
@@ -113,7 +114,7 @@ hc_command="java -Xmx12g -Xms12g -Djava.io.tmpdir=$TMP -jar $GATK/GenomeAnalysis
      $f \
      --dbsnp $DBSNP \
      -o $output_hc $optL $CAPTURE \
-     -stand_call_conf 20.0 \
+     -stand_call_conf 30.0 \
      -stand_emit_conf 10.0 \
      --genotyping_mode DISCOVERY $OUTPUT_MODE_HC"
 #    $MULTITHREAD
