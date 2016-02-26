@@ -93,6 +93,8 @@ then
 	done
 fi
 
+MULTITHREAD="-nct 4"
+
 gc_command="java -Xmx8g -Xms8g -Djava.io.tmpdir=$TMP -jar $GATK/GenomeAnalysisTK.jar \
    -T UnifiedGenotyper \
    -R $REF \
@@ -103,7 +105,7 @@ gc_command="java -Xmx8g -Xms8g -Djava.io.tmpdir=$TMP -jar $GATK/GenomeAnalysisTK
    -stand_emit_conf 10.0 \
    -gt_mode DISCOVERY $OUTPUT_MODE_UG \
    --genotype_likelihoods_model BOTH \
-   -nct 4"
+   $MULTITHREAD"
 
 hc_command="java -Xmx12g -Xms12g -Djava.io.tmpdir=$TMP -jar $GATK/GenomeAnalysisTK.jar \
      -T HaplotypeCaller \
@@ -113,8 +115,10 @@ hc_command="java -Xmx12g -Xms12g -Djava.io.tmpdir=$TMP -jar $GATK/GenomeAnalysis
      -o $output_hc $optL $CAPTURE \
      -stand_call_conf 20.0 \
      -stand_emit_conf 10.0 \
-     --genotyping_mode DISCOVERY $OUTPUT_MODE_HC \
-     -nct 4"
+     --genotyping_mode DISCOVERY $OUTPUT_MODE_HC"
+#    $MULTITHREAD
+# Apparently using nct can lead to issues with the HaplotypeCaller, see official docu:
+#  https://www.broadinstitute.org/gatk/guide/tooldocs/org_broadinstitute_gatk_tools_walkers_haplotypecaller_HaplotypeCaller.php
 
 # https://gatkforums.broadinstitute.org/discussion/3115/emit-all-sites-in-haplotypecaller
 # http://www.broadinstitute.org/gatk/gatkdocs/org_broadinstitute_sting_gatk_walkers_haplotypecaller_HaplotypeCaller.html
