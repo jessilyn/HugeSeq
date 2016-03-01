@@ -6,9 +6,35 @@ echo "*** Recalibrating base quality ***" >> $LOGFILE
 
 if [ $# -lt 2 ]
 then 
-	echo "Usage: $0 <bam> <out>"
+	echo "Usage: $0 <capture|False> <bam> <out>"
 	exit 1
 fi
+
+capture=$1
+shift
+echo $capture
+
+CAPTURE=""
+if [[ "$capture" != "False" ]]
+then
+	#CAPTURE="-L $capture"
+	captures=$(echo $capture | tr "[" "\n")
+	captures=$(echo $captures | tr "]" "\n")
+	captures=$(echo $captures | tr "," "\n")
+	#echo "here" $captures
+	
+	for capt in $captures
+	do
+		echo "HELLO CAPTURE" $capt
+		if [[ "$CAPTURE" != "" ]]
+		then 
+			CAPTURE="$CAPTURE -L $capt"
+		else
+			CAPTURE="-L $capt"
+		fi
+	done
+fi
+
 
 f=`cd \`dirname $1\`; pwd`/`basename $1`
 o=`cd \`dirname $2\`; pwd`/`basename $2`
@@ -21,6 +47,7 @@ command="java -Xms5g -Xmx5g -jar $GATK/GenomeAnalysisTK.jar \
    	-knownSites $MILLS_1K_GOLD_INDELS \
    	-knownSites $GOLD_1K_INDELS \
    	-knownSites $DBSNP \
+        $CAPTURE \
         -K /srv/gs1/software/gatk/GATKkey/stanford.edu.key"
 
 #	-cov ReadGroupCovariate \
@@ -43,6 +70,7 @@ command="java -Xms5g -Xmx5g -jar $GATK/GenomeAnalysisTK.jar \
    	-knownSites $MILLS_1K_GOLD_INDELS \
    	-knownSites $GOLD_1K_INDELS \
    	-knownSites $DBSNP \
+        $CAPTURE \
 	-BQSR ${o/.bam/.grp} \
         -K /srv/gs1/software/gatk/GATKkey/stanford.edu.key"
 

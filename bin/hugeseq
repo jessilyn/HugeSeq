@@ -202,22 +202,26 @@ def cleanup(pjobs, ext):
                 if (ext!=".recal.bam"):
 			job1=__cleanup('picard_nodup-%s'%bam.prefix, 'picard_nodup.sh', bam, bam.chext("nodup.bam"), False)
                 	job2=__cleanup('gatk_realn-%s'%bam.prefix, 'gatk_realn.sh', job1.output, bam.chext("realn.bam"), args.relax_realignment)
-                	job3=__cleanup('gatk_recal-%s'%bam.prefix, 'gatk_recal.sh', job2.output, bam.chext("recal.bam"), False)
+                	job3=__cleanup('gatk_recal-%s'%bam.prefix, 'gatk_recal.sh', job2.output, bam.chext("recal.bam"), False, capture)
 		else:
                 	job1=__cleanup('picard_nodup-%s'%bam.prefix, 'picard_nodup.sh', bam, bam, False)
 			job2=__cleanup('gatk_realn-%s'%bam.prefix, 'gatk_realn.sh', job1.output, bam, args.relax_realignment)
-                	job3=__cleanup('gatk_recal-%s'%bam.prefix, 'gatk_recal.sh', job2.output, bam, False)
+                	job3=__cleanup('gatk_recal-%s'%bam.prefix, 'gatk_recal.sh', job2.output, bam, False, capture)
                 job1.depend(pjob)
                 job2.depend(job1)
                 job3.depend(job2)
                 jobs.append(job3)
         return jobs
 
-def __cleanup(jname, cmd, input, output, remove):
+def __cleanup(jname, cmd, input, output, remove, capture=None):
         job=Job(jname)
         job.memory = "24G"
         job.sge_options="-l h_rt=120:00:00 -A %s"%args.account
-        job.append('%s %s %s %s'%(cmd, input, output, remove))
+        if capture is not None:
+            # capture is either set or "False" for gatk_recal, None otherwise
+            job.append('%s %s %s %s %s'%(cmd, capture, input, output, remove))
+        else:
+            job.append('%s %s %s %s'%(cmd, input, output, remove))
         job.append('samtools_index.sh %s' % output)
         job.output=output
         return job
