@@ -296,12 +296,13 @@ def __callvars(jobs, idprefix, output, inputs, pjobs, variants):
 			job3.sge_options="-l h_rt=120:00:00 -A %s"%args.account
 	       		job3.output=File(output+".snv.vcf")
      		
+                        # Combine after VQSR
 		       	if args.reference_calls:
-				job3.append('combine_vcf.sh %s %s %s %s %s'%(output+".snv.vcf", False, False, output+".vqsr.snp.vcf", output+".vqsr.indel.vcf"))
+				job3.append('combine_vcf.sh %s %s %s %s %s %s'%(output+".snv.vcf", False, False, False, output+".vqsr.snp.vcf", output+".vqsr.indel.vcf"))
 				job3.append('write_refcalls.sh %s'%(job1.output))
-				job3.append('combine_vcf.sh %s %s %s %s %s %s'%(output+".snv.refcalls.vcf", False, True, output+"refcalls.vcf", output+".vqsr.snp.vcf", output+".vqsr.indel.vcf"))
+				job3.append('combine_vcf.sh %s %s %s %s %s %s %s'%(output+".snv.refcalls.vcf", False, True, False, output+"refcalls.vcf", output+".vqsr.snp.vcf", output+".vqsr.indel.vcf"))
      		        else:
-				job3.append('combine_vcf.sh %s %s %s %s %s'%(output+".snv.vcf", False, False, output+".vqsr.snp.vcf", output+".vqsr.indel.vcf"))
+				job3.append('combine_vcf.sh %s %s %s %s %s %s'%(output+".snv.vcf", False, False, False, output+".vqsr.snp.vcf", output+".vqsr.indel.vcf"))
        	        	job3.depend(job2)
 		
 			jobs1.append(job3)
@@ -367,13 +368,14 @@ def merge_annotate(siJobs, svJobs, variants):
                 job1=Job('concat-vcf-%s'%sample)
                 for i in siCombinedVCFs.keys():
 
+                        # First merge
                         if (not args.vqsrchrom):
 				if args.nobinning:
-                                	job1.append('combine_vcf.sh %s %s %s %s'%(File(outdir.path, sample+".gatk.vcf"), True, False, " ".join(siCombinedVCFs[i])))
+                                	job1.append('combine_vcf.sh %s %s %s %s %s'%(File(outdir.path, sample+".gatk.vcf"), True, False, False, " ".join(siCombinedVCFs[i])))
                                 else:
-					job1.append('combine_vcf.sh %s %s %s %s'%(File(outdir.path, sample+".gatk.vcf"), False, False, " ".join(siCombinedVCFs[i])))
+					job1.append('combine_vcf.sh %s %s %s %s %s'%(File(outdir.path, sample+".gatk.vcf"), False, False, args.reference_calls, " ".join(siCombinedVCFs[i])))
                         else:
-                                job1.append('combine_vcf.sh %s %s %s %s'%(File(outdir.path, "genome.recal.vcf"), False, False, " ".join(siCombinedVCFs[i])))
+                                job1.append('combine_vcf.sh %s %s %s %s %s'%(File(outdir.path, "genome.recal.vcf"), False, False, False, " ".join(siCombinedVCFs[i])))
 
         	if (not args.vqsrchrom):
 	                job1.memory = "16G"
@@ -402,12 +404,13 @@ def merge_annotate(siJobs, svJobs, variants):
                 	job4.sge_options="-l h_rt=120:00:00 -M %s -m ea -A %s"%(args.email, args.account)
 	       		job4.output=File(outdir.path, sample+".vcf")
 
+                        # Combine after VQSR per chrom
 			if args.reference_calls:
-     		        	job4.append('combine_vcf.sh %s %s %s %s %s'%(File(outdir.path, sample+".vcf"), False, False, File(outdir.path, sample+".vqsr.snp.vcf"), File(outdir.path, sample+".vqsr.indel.vcf")))
+     		        	job4.append('combine_vcf.sh %s %s %s %s %s %s'%(File(outdir.path, sample+".vcf"), False, False, False, File(outdir.path, sample+".vqsr.snp.vcf"), File(outdir.path, sample+".vqsr.indel.vcf")))
                                 job4.append('write_refcalls.sh %s'%(job1.output))
-                                job4.append('combine_vcf.sh %s %s %s %s %s %s'%(File(outdir.path, sample+".snv.refcalls.vcf"), False, True, File(outdir.path, sample+".refcalls.vcf"), File(outdir.path, sample+".vqsr.snp.vcf"), File(outdir.path, sample+".vqsr.indel.vcf")))
+                                job4.append('combine_vcf.sh %s %s %s %s %s %s %s'%(File(outdir.path, sample+".snv.refcalls.vcf"), False, True, False, File(outdir.path, sample+".refcalls.vcf"), File(outdir.path, sample+".vqsr.snp.vcf"), File(outdir.path, sample+".vqsr.indel.vcf")))
        	        	else:	
-     		        	job4.append('combine_vcf.sh %s %s %s %s %s'%(File(outdir.path, sample+".vcf"), False, False, File(outdir.path, sample+".vqsr.snp.vcf"), File(outdir.path, sample+".vqsr.indel.vcf")))
+     		        	job4.append('combine_vcf.sh %s %s %s %s %s %s'%(File(outdir.path, sample+".vcf"), False, False, False, File(outdir.path, sample+".vqsr.snp.vcf"), File(outdir.path, sample+".vqsr.indel.vcf")))
 
 			job4.depend(job3)
 			jobs.append(job4)

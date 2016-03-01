@@ -15,6 +15,9 @@ shift
 zip=$1
 shift
 
+gvcf=$1
+shift
+
 inputs=`cd \`dirname $1\`; pwd`/`basename $1`
 shift
 for i in $*
@@ -22,11 +25,18 @@ do
        	inputs="$inputs --variant `cd \`dirname $i\`; pwd`/`basename $i`"
 done
 
+#  CombineVariants should not be used to merge gVCFs produced by the HaplotypeCaller; use CombineGVCFs instead
+TOOL="CombineVariants"
+if [[ "$gvcf" == "True" ]]
+then
+    TOOL="CombineGVCFs"
+fi
+
 if [[ "$noop" == "False" ]]
 then
 	command="java -Xmx8g -Xms8g -jar $GATK/GenomeAnalysisTK.jar \
 	   -R $REF \
-	   -T CombineVariants \
+	   -T $TOOL \
 	   --variant $inputs \
 	   -o $out"
 
