@@ -265,7 +265,10 @@ def __callvars(jobs, idprefix, output, inputs, pjobs, variants):
                 job0=Job('gatk_vc-%s'%idprefix)
                 job0.memory = "25G"
                 job0.sge_options="-l h_rt=120:00:00 -A %s"%args.account
-                job0.output=File(output+".gatk.vcf")
+                if args.reference_calls:
+                    job0.output=File(output+".gatk.g.vcf")
+                else:
+                    job0.output=File(output+".gatk.vcf")
                 job0.append('gatk_vc.sh %s %s %s %s %s %s'%(job0.output, capture, args.reference_calls, args.snp_hapcaller, args.indel_hapcaller, input))
                 job0.depend(*pjobs)
 		if args.donegenotyping:
@@ -354,6 +357,8 @@ def merge_annotate(siJobs, svJobs, variants):
         jobs=[]
 
 	keys=".gatk.vcf"
+        if args.reference_calls:
+                keys="gatk.g.vcf"
         if (args.vqsrchrom):
 		keys=".snv.vcf"
         siCombinedVCFs=group_output_by_suffix(keys, siJobs)
