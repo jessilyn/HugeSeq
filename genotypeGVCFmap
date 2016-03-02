@@ -1,0 +1,15 @@
+ROOT_DIR="/srv/gsfs0/projects/iPoP/WGS/IPOP_ACE_exome"
+for i in "${files[@]}"
+do
+  f="$f --variant:VCF ${ROOT_DIR}/$i/Hugeseq/SAMPLE.vcf"
+  # here is where we can create the map for later
+done
+
+command="java -Xmx4g -Xms4g -jar $GATK/GenomeAnalysisTK.jar \
+  -R /srv/gsfs0/projects/iPoP/Homo_sapiens_UCSC/UCSC/hg19/Sequence/WholeGenomeFasta/genome.fa \
+  -T CombineVariants \
+  $f \
+  -o $out \
+  -genotypeMergeOptions UNIQUIFY"
+
+$command
